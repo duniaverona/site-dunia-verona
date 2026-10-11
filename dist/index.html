@@ -199,6 +199,10 @@ body>header .brand small{font-size:17px;letter-spacing:.3em;margin-top:6px}
 .trajectory-flow.is-scroll-journey .journey-runway{height:calc(100svh + var(--journey-travel,0px))}
 .trajectory-flow.is-scroll-journey .journey-viewport{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:35px;padding-bottom:35px}
 @media(max-width:900px){.journey-viewport{padding:45px 7% 20px}.trajectory-flow .trajectory-list{grid-auto-columns:min(78vw,320px);gap:75px;min-height:450px}.trajectory-flow .trajectory-milestone{padding:25px 22px}.trajectory-flow .trajectory-date{font-size:28px}.trajectory-flow .trajectory-membership,.trajectory-flow .trajectory-extras{margin-left:7%;margin-right:7%}}
+
+.journey-curve path{stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.journey-thread-tip{fill:var(--blue-ink);pointer-events:none;opacity:0}
+@media(prefers-reduced-motion:reduce){.journey-thread-tip{display:none}}
 </style></head><body id="inicio">
 <!-- Abertura: motion DV (toca uma vez por visita) -->
 <!--
@@ -423,26 +427,48 @@ procedureCards.forEach(card=>{
 });
 
 
-/* Vertical page scrolling gently advances the horizontal journey on larger screens. */
+/* Organic trajectory thread draws forward toward the next milestone. */
 (()=>{
  const section=document.querySelector('.trajectory-flow'),runway=section.querySelector('.journey-runway'),track=section.querySelector('.trajectory-track'),list=section.querySelector('.trajectory-list'),svg=section.querySelector('.journey-curve'),path=svg.querySelector('path');
  const desktop=matchMedia('(min-width:901px) and (min-height:641px)'),reduce=matchMedia('(prefers-reduced-motion:reduce)');
- let travel=0,frame=0;
+ const tip=document.createElementNS('http://www.w3.org/2000/svg','circle');
+ tip.setAttribute('class','journey-thread-tip');tip.setAttribute('r','4');svg.appendChild(tip);
+ let travel=0,frame=0,length=0,drawn=0,firstLength=0,visible=false;
+ function targetLength(){
+  if(reduce.matches)return length;
+  if(!visible)return 0;
+  const progress=travel>0?Math.max(0,Math.min(1,track.scrollLeft/travel)):1;
+  return firstLength+(length-firstLength)*progress;
+ }
  function paint(){
   frame=0;
-  if(!section.classList.contains('is-scroll-journey')||track.contains(document.activeElement))return;
-  const distance=Math.max(0,Math.min(travel,-runway.getBoundingClientRect().top));
-  track.scrollLeft=distance;
+  if(section.classList.contains('is-scroll-journey')&&!track.contains(document.activeElement)){
+   const distance=Math.max(0,Math.min(travel,-runway.getBoundingClientRect().top));
+   if(Math.abs(track.scrollLeft-distance)>1)track.scrollLeft=distance;
+  }
+  const target=targetLength();
+  drawn=reduce.matches?length:drawn+(target-drawn)*.085;
+  if(Math.abs(target-drawn)<.35)drawn=target;
+  path.style.strokeDashoffset=String(Math.max(0,length-drawn));
+  if(length>0){const point=path.getPointAtLength(Math.max(0,Math.min(length,drawn)));tip.setAttribute('cx',point.x);tip.setAttribute('cy',point.y)}
+  tip.style.opacity=visible&&!reduce.matches&&drawn>1&&drawn<length-2?'1':'0';
+  if(Math.abs(target-drawn)>.35)schedule();
  }
  function schedule(){if(!frame)frame=requestAnimationFrame(paint)}
  function measure(){
   const cards=[...list.children],width=list.scrollWidth;
   svg.setAttribute('width',width);svg.setAttribute('height','450');svg.setAttribute('viewBox','0 0 '+width+' 450');
-  const points=cards.map(card=>({x:card.offsetLeft+card.offsetWidth/2,y:card.offsetTop+card.offsetHeight/2}));
-  let d='M0 '+points[0].y;
-  let previous={x:0,y:points[0].y};
-  points.forEach(point=>{const middle=(previous.x+point.x)/2;d+=' C'+middle+' '+previous.y+' '+middle+' '+point.y+' '+point.x+' '+point.y;previous=point});
-  d+=' L'+width+' '+previous.y;path.setAttribute('d',d);
+  const boxes=cards.map(card=>({left:card.offsetLeft,right:card.offsetLeft+card.offsetWidth,y:card.offsetTop+card.offsetHeight/2}));
+  let d='M'+boxes[0].right+' '+boxes[0].y;
+  for(let i=1;i<boxes.length;i++){
+   const a=boxes[i-1],b=boxes[i],gap=b.left-a.right,turn=i%2?1:-1;
+   d+=' C'+(a.right+gap*.5)+' '+(a.y-turn*46)+' '+(b.left-gap*.5)+' '+(b.y+turn*46)+' '+b.left+' '+b.y;
+   if(i<boxes.length-1)d+=' L'+b.right+' '+b.y;
+  }
+  path.setAttribute('d',d);
+  length=path.getTotalLength();firstLength=Math.min(length,Math.hypot(boxes[1].left-boxes[0].right,boxes[1].y-boxes[0].y)*.7);
+  path.style.strokeDasharray=String(length);drawn=Math.min(drawn,length);
+  path.style.strokeDashoffset=String(length-drawn);
   travel=Math.max(0,track.scrollWidth-track.clientWidth);
   const active=desktop.matches&&!reduce.matches&&travel>0;
   section.classList.toggle('is-scroll-journey',active);
@@ -451,9 +477,11 @@ procedureCards.forEach(card=>{
   schedule();
  }
  window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',measure);
+ track.addEventListener('scroll',schedule,{passive:true});track.addEventListener('focusout',schedule);
  desktop.addEventListener('change',measure);reduce.addEventListener('change',measure);
  if('ResizeObserver'in window)new ResizeObserver(measure).observe(list);
- track.addEventListener('focusout',schedule);
+ if('IntersectionObserver'in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule()},{threshold:.12}).observe(track);
+ else visible=true;
  measure();document.fonts.ready.then(measure);
 })();
 
