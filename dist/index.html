@@ -195,6 +195,7 @@ body>header .brand small{font-size:17px;letter-spacing:.3em;margin-top:6px}
 .journey-curve{position:absolute;left:0;top:0;height:450px;overflow:visible;pointer-events:none;z-index:0}
 .journey-curve path{fill:none;stroke:var(--blue-ink);stroke-width:3;stroke-linecap:round}
 .trajectory-flow .trajectory-membership,.trajectory-flow .trajectory-extras{margin-left:8%;margin-right:8%}
+.trajectory-flow.is-scroll-journey .trajectory-track{scroll-snap-type:none;scroll-behavior:auto}
 .trajectory-flow.is-scroll-journey .journey-runway{height:calc(100svh + var(--journey-travel,0px))}
 .trajectory-flow.is-scroll-journey .journey-viewport{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:35px;padding-bottom:35px}
 @media(max-width:900px){.journey-viewport{padding:45px 7% 20px}.trajectory-flow .trajectory-list{grid-auto-columns:min(78vw,320px);gap:75px;min-height:450px}.trajectory-flow .trajectory-milestone{padding:25px 22px}.trajectory-flow .trajectory-date{font-size:28px}.trajectory-flow .trajectory-membership,.trajectory-flow .trajectory-extras{margin-left:7%;margin-right:7%}}
