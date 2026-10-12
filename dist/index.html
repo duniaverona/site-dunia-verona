@@ -326,6 +326,11 @@ body>header .brand small{font-size:17px;letter-spacing:.3em;margin-top:6px}
 .story-panorama .text-link:hover{color:#A3C8E8}
 @media(max-width:900px){.photo-story.story-panorama{grid-template-columns:1fr;background-size:auto 100%;background-position:center top}.story-panorama .story-photo{aspect-ratio:2/3;max-height:none}.story-panorama .story-photo img{mask-image:none;-webkit-mask-image:none}.story-panorama .story-copy{padding:45px 7% 58px;background:rgba(35,65,75,.94)}.story-panorama .story-copy p{font-size:clamp(30px,7.5vw,42px);margin-bottom:28px}}
 
+
+/* Soften only the extended studio backdrop, keeping portrait and copy crisp. */
+.photo-story.story-panorama{position:relative;isolation:isolate;background:#294c56}
+.photo-story.story-panorama::before{content:"";position:absolute;inset:-5px;z-index:-1;pointer-events:none;background:url("https://duniaverona.loftyamber4.chatgpt.site/assets/dunia-story-blue-backdrop-v1.webp") center/100% 100% no-repeat;filter:blur(2.5px)}
+@media(max-width:900px){.photo-story.story-panorama::before{background-size:auto 100%;background-position:center top}}
 </style></head><body id="inicio">
 <!-- Abertura: motion DV (toca uma vez por visita) -->
 <!--
