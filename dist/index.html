@@ -347,6 +347,14 @@ body>header .brand small{font-size:17px;letter-spacing:.3em;margin-top:6px}
 .review-dot:focus-visible{outline:2px solid var(--blue-ink);outline-offset:2px}
 @media(max-width:480px){.review-dots{gap:3px;padding:10px 12px}.review-pagination .review-dot{flex-basis:29px;width:29px}.review-pagination .review-dot[aria-current="true"]{flex-basis:50px;width:50px}.review-dot[aria-current="true"]::before{width:43px}}
 @media(prefers-reduced-motion:reduce){.js .intro-point.intro-slide{opacity:1;transform:none;transition:none}.review-dot::before{transition:none}}
+
+/* Slightly smaller review pagination, retaining comfortable click targets. */
+.review-dots{gap:4px;padding:8px 14px}
+.review-pagination .review-dot{flex-basis:27px;width:27px;height:32px;min-height:32px}
+.review-dot::before{width:7px;height:7px}
+.review-pagination .review-dot[aria-current="true"]{flex-basis:47px;width:47px}
+.review-dot[aria-current="true"]::before{width:39px;height:7px}
+@media(max-width:480px){.review-dots{gap:2px;padding:7px 10px}.review-pagination .review-dot{flex-basis:25px;width:25px}.review-pagination .review-dot[aria-current="true"]{flex-basis:43px;width:43px}.review-dot[aria-current="true"]::before{width:35px}}
 </style></head><body id="inicio">
 <!-- Abertura: motion DV (toca uma vez por visita) -->
 <!--
